@@ -7,15 +7,29 @@ function App() {
   const [tasks, setTasks] = useState([])
   const [EditMode, setEditMode] = useState(false)
   const [id, setID] = useState("")
+  const [error, setError] = useState(null)
+
+
+
+  const validForm = () => {
+    let isValid = true
+    setError(null)
+
+    if (isEmpty(task)) {
+      setError("You must add a Task")
+      isValid = false
+
+    }
+    return isValid
+  }
+
 
   const addTask = (e) => {
     e.preventDefault()
 
-    if (isEmpty(task)) {
-      console.log("Task Empty")
+    if (!validForm()) {
       return
     }
-
     const newTask = { id: shortid.generate(), name: task }
 
     setTasks([...tasks, newTask])
@@ -26,6 +40,13 @@ function App() {
   const saveTask = (e) => {
     e.preventDefault()
 
+    if(!validForm()){
+      return
+    }
+
+    
+
+
     if (isEmpty(task)) {
       console.log("Task Empty")
       return
@@ -33,7 +54,7 @@ function App() {
 
 
     const editedTasks = tasks.map(item => item.id === id ? { id, name: task } : item)
-    setTask(editedTasks)
+    setTasks(editedTasks)
     setEditMode(false)
     setTask("")
     setID("")
@@ -50,6 +71,7 @@ function App() {
 
 
   const editTask = (theTask) => {
+    console.log(theTask.id)
     setTask(theTask.name)
     setEditMode(true)
     setID(theTask.id)
@@ -71,7 +93,7 @@ function App() {
           <h4 className="text-center">List of Tasks</h4>
           {
             size(tasks) <= 0 ?
-              (<h5 className="text-center">No scheduled Tasks</h5>
+              (<li className="list-group-item">No scheduled Tasks</li>
               ) : (
 
                 <ul className="list-group">
@@ -100,6 +122,9 @@ function App() {
           <h4 className="text-center">{EditMode ? "Edit Task" : "Adding Tasks"}</h4>
           <form onSubmit={EditMode ? saveTask : addTask}>
             <input type="text" className="form-control mb-2" placeholder="Ingrese la Tarea.." onChange={(text) => setTask(text.target.value)} value={task} />
+            {
+              error && <span className="text-danger">{error}</span>
+            }
             <button className={EditMode ? "btn btn-warning btn-block" : "btn btn-dark btn-block"} type="submit">{EditMode ? "Save" : "Add"}</button>
           </form>
         </div>
