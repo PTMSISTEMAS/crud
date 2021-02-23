@@ -1,6 +1,7 @@
 import { isEmpty, size } from 'lodash'
-import React, { useState } from 'react'
-import shortid from 'shortid'
+import React, { useEffect, useState } from 'react'
+import { addDocument, getCollection,updateDocument } from './actions';
+
 
 function App() {
   const [task, setTask] = useState("")
@@ -8,6 +9,31 @@ function App() {
   const [EditMode, setEditMode] = useState(false)
   const [id, setID] = useState("")
   const [error, setError] = useState(null)
+
+
+  useEffect(() => {
+    (async () => {
+      const result = await getCollection("tasks")
+
+      if (result.statusResponse) {
+        setTasks(result.data)
+      }
+    })()
+  }, [])
+
+
+
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyD-FaqgZ25EknvcMFLsA2MXP3TWHT5Pvnw",
+    authDomain: "crud-c4d71.firebaseapp.com",
+    projectId: "crud-c4d71",
+    storageBucket: "crud-c4d71.appspot.com",
+    messagingSenderId: "732874891452",
+    appId: "1:732874891452:web:0b3a26fc3fb1533cfd30b9",
+    measurementId: "G-4VWDZJMJ0Z"
+  };
+
 
 
 
@@ -24,33 +50,50 @@ function App() {
   }
 
 
-  const addTask = (e) => {
+  const addTask = async (e) => {
     e.preventDefault()
 
     if (!validForm()) {
       return
     }
-    const newTask = { id: shortid.generate(), name: task }
 
-    setTasks([...tasks, newTask])
+    const result = await addDocument("tasks", { name: task })
+
+    //const newTask = { id: shortid.generate(), name: task }
+
+    if(!result.statusResponse){
+
+      setError(result.error)
+      return
+    }  
+    
+    setTasks([...tasks, {id: result.data.id,name: task}])
     setTask("")
 
   }
 
-  const saveTask = (e) => {
+  const saveTask = async (e) => {
     e.preventDefault()
 
-    if(!validForm()){
+    if (!validForm()) {
       return
     }
-
-    
-
 
     if (isEmpty(task)) {
       console.log("Task Empty")
       return
     }
+
+
+    const result = await updateDocument("tasks",id,{name: task})
+
+    if(!result.statusResponse){
+      setError(result.error)
+      return
+    }
+
+
+   
 
 
     const editedTasks = tasks.map(item => item.id === id ? { id, name: task } : item)
